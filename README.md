@@ -75,7 +75,7 @@ skycast --scene snow          # force a scene, real weather in the panel
 | `-v, --version` | print the version |
 
 Multiple words are joined, so `skycast new york` works like `skycast "new york"`.
-Add a region or country after a comma to pick the right place: `skycast "paris, us"`.
+Add a region or country after a comma to pick the right place: `skycast "london, canada"`.
 
 ### Keys
 
