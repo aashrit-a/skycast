@@ -1,6 +1,6 @@
 module github.com/YOUR_USERNAME/skycast
 
-go 1.24.7
+go 1.22
 
 require (
 	github.com/charmbracelet/bubbletea v1.3.4

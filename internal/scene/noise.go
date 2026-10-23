@@ -39,9 +39,6 @@ func (n *noise) at2(x, y float64) float64 {
 	return lerp(a, b, ty)
 }
 
-// at returns smooth 1D value noise in [0, 1).
-func (n *noise) at(x float64) float64 { return n.at2(x, 0) }
-
 // fbm sums two octaves for a more natural, billowy look.
 func (n *noise) fbm(x, y float64) float64 {
 	return (n.at2(x, y)*2 + n.at2(x*2.3+17, y*2.3+5)) / 3

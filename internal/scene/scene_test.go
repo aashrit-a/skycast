@@ -118,7 +118,7 @@ func TestDeterministic(t *testing.T) {
 		s.Draw(c)
 		return c.Render(Palette{})
 	}
-	if render() != render() {
+	if a, b := render(), render(); a != b {
 		t.Error("same seed produced different frames")
 	}
 }

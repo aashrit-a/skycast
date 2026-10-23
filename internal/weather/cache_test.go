@@ -111,7 +111,7 @@ func TestCacheUnwritableDir(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	f.Close()
+	_ = f.Close()
 	c := &Cache{Dir: f.Name()} // a file, not a dir: every write fails
 	c.Save(1, 2, UnitsMetric, []byte("{}"), time.Now())
 }

@@ -1,0 +1,2 @@
+# Golden files and fixtures must keep LF endings on every OS.
+testdata/** -text
