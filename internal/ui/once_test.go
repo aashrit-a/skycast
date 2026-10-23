@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/YOUR_USERNAME/skycast/internal/config"
-	"github.com/YOUR_USERNAME/skycast/internal/scene"
+	"github.com/aashrit-a/skycast/internal/config"
+	"github.com/aashrit-a/skycast/internal/scene"
 )
 
 var updateGolden = flag.Bool("update", false, "rewrite golden files")

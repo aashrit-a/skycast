@@ -9,9 +9,9 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/YOUR_USERNAME/skycast/internal/config"
-	"github.com/YOUR_USERNAME/skycast/internal/scene"
-	"github.com/YOUR_USERNAME/skycast/internal/weather"
+	"github.com/aashrit-a/skycast/internal/config"
+	"github.com/aashrit-a/skycast/internal/scene"
+	"github.com/aashrit-a/skycast/internal/weather"
 )
 
 // onceSteps is how far the scene is simulated before the single frame.

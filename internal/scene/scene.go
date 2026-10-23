@@ -5,7 +5,7 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/YOUR_USERNAME/skycast/internal/weather"
+	"github.com/aashrit-a/skycast/internal/weather"
 )
 
 // Params selects and configures a scene.

@@ -3,7 +3,7 @@ package scene
 import (
 	"math/rand"
 
-	"github.com/YOUR_USERNAME/skycast/internal/weather"
+	"github.com/aashrit-a/skycast/internal/weather"
 )
 
 type fogBand struct {

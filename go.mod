@@ -1,4 +1,4 @@
-module github.com/YOUR_USERNAME/skycast
+module github.com/aashrit-a/skycast
 
 go 1.22
 

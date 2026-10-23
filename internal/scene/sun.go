@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/YOUR_USERNAME/skycast/internal/weather"
+	"github.com/aashrit-a/skycast/internal/weather"
 )
 
 // sun is the clear-day scene: a pulsing sun with slowly rotating rays.

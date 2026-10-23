@@ -7,7 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/YOUR_USERNAME/skycast/internal/weather"
+	"github.com/aashrit-a/skycast/internal/weather"
 )
 
 // refreshInterval is how often the weather is re-fetched automatically.

@@ -4,9 +4,9 @@
 
 ![skycast demo](assets/demo.gif)
 
-[![CI](https://github.com/YOUR_USERNAME/skycast/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/skycast/actions/workflows/ci.yml)
-[![Go version](https://img.shields.io/github/go-mod/go-version/YOUR_USERNAME/skycast)](go.mod)
-[![Release](https://img.shields.io/github/v/release/YOUR_USERNAME/skycast)](https://github.com/YOUR_USERNAME/skycast/releases)
+[![CI](https://github.com/aashrit-a/skycast/actions/workflows/ci.yml/badge.svg)](https://github.com/aashrit-a/skycast/actions/workflows/ci.yml)
+[![Go version](https://img.shields.io/github/go-mod/go-version/aashrit-a/skycast)](go.mod)
+[![Release](https://img.shields.io/github/v/release/aashrit-a/skycast)](https://github.com/aashrit-a/skycast/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 skycast shows the current weather as a small, living ASCII scene beside a
@@ -30,17 +30,17 @@ wttr.in give you a report. skycast gives you a window.
 ## Install
 
 ```sh
-go install github.com/YOUR_USERNAME/skycast@latest
+go install github.com/aashrit-a/skycast@latest
 ```
 
 Homebrew (once the tap exists):
 
 ```sh
-brew install YOUR_USERNAME/tap/skycast
+brew install aashrit-a/tap/skycast
 ```
 
 Or download a binary for Linux, macOS or Windows from the
-[Releases](https://github.com/YOUR_USERNAME/skycast/releases) page.
+[Releases](https://github.com/aashrit-a/skycast/releases) page.
 
 ## Usage
 

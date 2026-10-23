@@ -8,8 +8,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/YOUR_USERNAME/skycast/internal/config"
-	"github.com/YOUR_USERNAME/skycast/internal/scene"
+	"github.com/aashrit-a/skycast/internal/config"
+	"github.com/aashrit-a/skycast/internal/scene"
 )
 
 func TestDemoCoversEveryScene(t *testing.T) {

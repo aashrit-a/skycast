@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/YOUR_USERNAME/skycast/internal/config"
-	"github.com/YOUR_USERNAME/skycast/internal/location"
-	"github.com/YOUR_USERNAME/skycast/internal/weather"
+	"github.com/aashrit-a/skycast/internal/config"
+	"github.com/aashrit-a/skycast/internal/location"
+	"github.com/aashrit-a/skycast/internal/weather"
 )
 
 // fetchTimeout bounds one full load (location + forecast).

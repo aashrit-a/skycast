@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/YOUR_USERNAME/skycast/internal/weather"
+	"github.com/aashrit-a/skycast/internal/weather"
 )
 
 func TestCanvasBasics(t *testing.T) {

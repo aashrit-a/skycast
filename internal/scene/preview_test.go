@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/YOUR_USERNAME/skycast/internal/weather"
+	"github.com/aashrit-a/skycast/internal/weather"
 )
 
 // TestPreview prints a frame when SKYCAST_PREVIEW is set (dev aid).

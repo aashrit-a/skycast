@@ -9,7 +9,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/YOUR_USERNAME/skycast/internal/weather"
+	"github.com/aashrit-a/skycast/internal/weather"
 )
 
 // asciiBorder replaces the rounded border in --ascii mode.

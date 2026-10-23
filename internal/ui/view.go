@@ -6,7 +6,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/YOUR_USERNAME/skycast/internal/location"
+	"github.com/aashrit-a/skycast/internal/location"
 )
 
 var (

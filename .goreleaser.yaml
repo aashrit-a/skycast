@@ -40,14 +40,14 @@ changelog:
       - "^test:"
       - "^chore:"
 
-# Homebrew tap: create github.com/YOUR_USERNAME/homebrew-tap, add a
+# Homebrew tap: create github.com/aashrit-a/homebrew-tap, add a
 # HOMEBREW_TAP_GITHUB_TOKEN secret, then uncomment.
 # brews:
 #   - repository:
-#       owner: YOUR_USERNAME
+#       owner: aashrit-a
 #       name: homebrew-tap
 #       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-#     homepage: https://github.com/YOUR_USERNAME/skycast
+#     homepage: https://github.com/aashrit-a/skycast
 #     description: Weather in your terminal, animated.
 #     license: MIT
 #     test: |

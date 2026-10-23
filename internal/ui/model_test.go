@@ -13,10 +13,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/YOUR_USERNAME/skycast/internal/config"
-	"github.com/YOUR_USERNAME/skycast/internal/location"
-	"github.com/YOUR_USERNAME/skycast/internal/scene"
-	"github.com/YOUR_USERNAME/skycast/internal/weather"
+	"github.com/aashrit-a/skycast/internal/config"
+	"github.com/aashrit-a/skycast/internal/location"
+	"github.com/aashrit-a/skycast/internal/scene"
+	"github.com/aashrit-a/skycast/internal/weather"
 )
 
 var fixedNow = time.Date(2026, 10, 22, 14, 5, 0, 0, time.UTC)

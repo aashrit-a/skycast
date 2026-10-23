@@ -3,7 +3,7 @@ package ui
 import (
 	"time"
 
-	"github.com/YOUR_USERNAME/skycast/internal/weather"
+	"github.com/aashrit-a/skycast/internal/weather"
 )
 
 // Demo timing.
