@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -114,5 +115,17 @@ func TestResolveOrder(t *testing.T) {
 	}
 	if loc.Lat != 48.85 || loc.Lon != 2.35 || loc.Display() != "48.85, 2.35" {
 		t.Errorf("loc = %+v", loc)
+	}
+}
+
+func TestGeocodeErrors(t *testing.T) {
+	down := httptest.NewServer(http.NotFoundHandler())
+	down.Close()
+	if _, err := (&Resolver{GeocodeURL: down.URL}).Geocode(context.Background(), "x"); !errors.Is(err, ErrGeocodeUnreachable) {
+		t.Errorf("want ErrGeocodeUnreachable, got %v", err)
+	}
+	bad := server(t, func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(502) })
+	if _, err := (&Resolver{GeocodeURL: bad.URL}).Geocode(context.Background(), "x"); err == nil || !strings.Contains(err.Error(), "502") {
+		t.Errorf("want HTTP 502 error, got %v", err)
 	}
 }

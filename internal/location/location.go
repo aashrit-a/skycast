@@ -84,7 +84,7 @@ func (r *Resolver) getJSON(ctx context.Context, u string, v any) error {
 	}
 	resp, err := hc.Do(req)
 	if err != nil {
-		return err
+		return &netError{err: err}
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
@@ -96,3 +96,9 @@ func (r *Resolver) getJSON(ctx context.Context, u string, v any) error {
 	}
 	return json.Unmarshal(body, v)
 }
+
+// netError marks a transport failure (as opposed to a bad response).
+type netError struct{ err error }
+
+func (e *netError) Error() string { return e.err.Error() }
+func (e *netError) Unwrap() error { return e.err }

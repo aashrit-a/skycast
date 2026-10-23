@@ -11,6 +11,9 @@ import (
 // DefaultGeocodeURL is the Open-Meteo geocoding endpoint.
 const DefaultGeocodeURL = "https://geocoding-api.open-meteo.com/v1/search"
 
+// ErrGeocodeUnreachable means the geocoding service could not be contacted.
+var ErrGeocodeUnreachable = errors.New("can't reach the geocoding service — check your connection")
+
 // ErrLocationNotFound is returned (wrapped) when geocoding finds nothing.
 var ErrLocationNotFound = errors.New("location not found")
 
@@ -63,7 +66,11 @@ func (r *Resolver) Geocode(ctx context.Context, name string) (Location, error) {
 		if ctx.Err() != nil {
 			return Location{}, ctx.Err()
 		}
-		return Location{}, fmt.Errorf("can't reach the geocoding service — check your connection (%v)", err)
+		var ne *netError
+		if errors.As(err, &ne) {
+			return Location{}, ErrGeocodeUnreachable
+		}
+		return Location{}, fmt.Errorf("geocoding service error: %w", err)
 	}
 	if len(resp.Results) == 0 {
 		return Location{}, &notFoundError{name: name}

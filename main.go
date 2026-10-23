@@ -49,7 +49,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return debugFetch(cfg, stdout, stderr)
 	}
 	palette := scene.NewPalette(cfg.NoColor)
-	p := tea.NewProgram(ui.New(cfg, palette), tea.WithAltScreen())
+	m := ui.New(ui.Options{
+		Config:  cfg,
+		Palette: palette,
+		Loader:  ui.NewLoader(cfg, "skycast/"+version),
+	})
+	p := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintf(stderr, "skycast: %v\n", err)
 		return 1
