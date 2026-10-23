@@ -29,13 +29,18 @@ jobs:
       - name: Test
         shell: bash
         run: |
+          set -o pipefail
           # The race detector needs cgo and a C toolchain, which is
           # unreliable on Windows runners.
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            go test ./...
-          else
-            go test ./... -race
-          fi
+          race=-race
+          if [ "$RUNNER_OS" = "Windows" ]; then race=; fi
+          # On failure, repeat the key lines as annotations so they show
+          # up in the run summary.
+          go test ./... $race 2>&1 | tee test.log || {
+            grep -E '^(--- FAIL|FAIL|panic:|fatal error)|WARNING: DATA RACE|ThreadSanitizer|dyld|_test\.go:[0-9]+:' test.log \
+              | head -30 | sed 's/^/::error::/'
+            exit 1
+          }
 
   lint:
     runs-on: ubuntu-latest
@@ -46,4 +51,4 @@ jobs:
           go-version: stable
       - uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.5
+          version: latest
