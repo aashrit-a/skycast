@@ -295,15 +295,15 @@ func TestForcedScene(t *testing.T) {
 }
 
 func TestPanelASCII(t *testing.T) {
-	st := newStyles(true)
-	p := renderPanel(sampleReport(weather.UnitsMetric), st, true, panelWidth, fullPanelHeight, fixedNow)
+	st := newStyles(true, true)
+	p := renderPanel(sampleReport(weather.UnitsMetric), st, panelWidth, fullPanelHeight, fixedNow)
 	for _, want := range []string{"hum 82%", "wind 12 km/h NE", "rise 05:58", "set 17:02"} {
 		if !strings.Contains(p, want) {
 			t.Errorf("panel missing %q:\n%s", want, p)
 		}
 	}
 	for _, r := range p {
-		if r > 127 && !strings.ContainsRune("╭╮╰╯─│°", r) {
+		if r > 127 {
 			t.Errorf("non-ASCII rune %q in ASCII panel", r)
 		}
 	}
@@ -312,7 +312,7 @@ func TestPanelASCII(t *testing.T) {
 func TestPanelTruncatesLongNames(t *testing.T) {
 	r := sampleReport(weather.UnitsMetric)
 	r.Location = "Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch, United Kingdom"
-	p := renderPanel(r, newStyles(true), false, panelWidth, fullPanelHeight, fixedNow)
+	p := renderPanel(r, newStyles(true, false), panelWidth, fullPanelHeight, fixedNow)
 	for _, l := range strings.Split(p, "\n") {
 		if lipgloss.Width(l) != panelWidth {
 			t.Errorf("line width %d: %q", lipgloss.Width(l), l)
@@ -326,10 +326,10 @@ func TestPanelTruncatesLongNames(t *testing.T) {
 func TestPanelShortDaily(t *testing.T) {
 	r := sampleReport(weather.UnitsMetric)
 	r.Daily = nil
-	_ = renderPanel(r, newStyles(true), false, panelWidth, fullPanelHeight, fixedNow)
-	_ = renderWidePanel(r, newStyles(true), false, 50, stackedPanelH, fixedNow)
+	_ = renderPanel(r, newStyles(true, false), panelWidth, fullPanelHeight, fixedNow)
+	_ = renderWidePanel(r, newStyles(true, false), 50, stackedPanelH, fixedNow)
 	r.Daily = sampleReport(weather.UnitsMetric).Daily[:2]
-	if p := renderPanel(r, newStyles(true), false, panelWidth, fullPanelHeight, fixedNow); !strings.Contains(p, "Fri") {
+	if p := renderPanel(r, newStyles(true, false), panelWidth, fullPanelHeight, fixedNow); !strings.Contains(p, "Fri") {
 		t.Error("partial forecast missing")
 	}
 }

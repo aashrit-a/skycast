@@ -12,22 +12,41 @@ import (
 	"github.com/YOUR_USERNAME/skycast/internal/weather"
 )
 
-// styles are the text styles used outside the scene.
+// asciiBorder replaces the rounded border in --ascii mode.
+var asciiBorder = lipgloss.Border{
+	Top: "-", Bottom: "-", Left: "|", Right: "|",
+	TopLeft: "+", TopRight: "+", BottomLeft: "+", BottomRight: "+",
+}
+
+// styles are the text styles and glyphs used outside the scene.
 type styles struct {
 	border lipgloss.Style
 	title  lipgloss.Style
 	bold   lipgloss.Style
 	dim    lipgloss.Style
 	err    lipgloss.Style
+
+	ascii bool
+	sep   string // between items on one line
+	ell   string // truncation marker
+	deg   string // degree sign
 }
 
-func newStyles(noColor bool) styles {
+func newStyles(noColor, ascii bool) styles {
 	s := styles{
 		border: lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(0, 1),
 		title:  lipgloss.NewStyle().Bold(true),
 		bold:   lipgloss.NewStyle().Bold(true),
 		dim:    lipgloss.NewStyle(),
 		err:    lipgloss.NewStyle().Bold(true),
+		ascii:  ascii,
+		sep:    " · ",
+		ell:    "…",
+		deg:    "°",
+	}
+	if ascii {
+		s.border = s.border.Border(asciiBorder)
+		s.sep, s.ell, s.deg = " | ", "...", ""
 	}
 	if noColor {
 		return s
@@ -40,17 +59,16 @@ func newStyles(noColor bool) styles {
 	return s
 }
 
-// round formats a value as a whole number without "-0".
-func round(v float64) string {
-	return strconv.Itoa(int(math.Round(v)))
+// join joins items with the separator.
+func (st styles) join(items ...string) string { return strings.Join(items, st.sep) }
+
+// temp formats a temperature such as "18°C" ("18C" in ASCII mode).
+func (st styles) temp(v float64, u weather.Units) string {
+	return round(v) + strings.Replace(weather.TempSuffix(u), "°", st.deg, 1)
 }
 
-func formatCoords(lat, lon float64) string {
-	return fmt.Sprintf("%.2f, %.2f", lat, lon)
-}
-
-// truncate shortens s to at most w columns, ending with "…" if cut.
-func truncate(s string, w int) string {
+// trunc shortens s to at most w columns, ending with the ellipsis if cut.
+func (st styles) trunc(s string, w int) string {
 	if w <= 0 {
 		return ""
 	}
@@ -58,10 +76,23 @@ func truncate(s string, w int) string {
 		return s
 	}
 	r := []rune(s)
-	for len(r) > 0 && lipgloss.Width(string(r))+1 > w {
+	ew := lipgloss.Width(st.ell)
+	for len(r) > 0 && lipgloss.Width(string(r))+ew > w {
 		r = r[:len(r)-1]
 	}
-	return string(r) + "…"
+	if ew > w {
+		return string(r)
+	}
+	return string(r) + st.ell
+}
+
+// round formats a value as a whole number without "-0".
+func round(v float64) string {
+	return strconv.Itoa(int(math.Round(v)))
+}
+
+func formatCoords(lat, lon float64) string {
+	return fmt.Sprintf("%.2f, %.2f", lat, lon)
 }
 
 // ago formats how long ago t was, relative to now.
@@ -79,27 +110,26 @@ func ago(t, now time.Time) string {
 }
 
 // currentLines is the "now" block: place, condition, temps, details.
-func currentLines(r *weather.Report, st styles, ascii bool, w int) []string {
+func currentLines(r *weather.Report, st styles, w int) []string {
 	c := r.Current
 	_, _, label := weather.Classify(c.Code, c.IsDay)
-	ts := weather.TempSuffix(r.Units)
 	wind := fmt.Sprintf("%s %s %s", round(c.WindSpeed), weather.WindSuffix(r.Units), weather.Compass(c.WindDirDeg))
 	lines := []string{
-		st.title.Render(truncate(r.Location, w)),
-		truncate(label, w),
+		st.title.Render(st.trunc(r.Location, w)),
+		st.trunc(label, w),
 		"",
-		st.bold.Render(round(c.Temp)+ts) + "   " + "feels " + round(c.FeelsLike) + ts,
+		st.bold.Render(st.temp(c.Temp, r.Units)) + "   feels " + st.temp(c.FeelsLike, r.Units),
 	}
 	// NOTE: 💨 instead of 🌬 — 🌬 has no default emoji presentation, so
 	// terminals disagree on its width and the panel border would wobble.
-	if ascii {
-		lines = append(lines, truncate(fmt.Sprintf("hum %d%%  wind %s", c.Humidity, wind), w))
+	if st.ascii {
+		lines = append(lines, st.trunc(fmt.Sprintf("hum %d%%  wind %s", c.Humidity, wind), w))
 	} else {
-		lines = append(lines, truncate(fmt.Sprintf("💧 %d%%   💨 %s", c.Humidity, wind), w))
+		lines = append(lines, st.trunc(fmt.Sprintf("💧 %d%%   💨 %s", c.Humidity, wind), w))
 	}
 	if len(r.Daily) > 0 && !r.Daily[0].Sunrise.IsZero() {
 		rise, set := r.Daily[0].Sunrise.Format("15:04"), r.Daily[0].Sunset.Format("15:04")
-		if ascii {
+		if st.ascii {
 			lines = append(lines, "rise "+rise+"  set "+set)
 		} else {
 			lines = append(lines, "☀ "+rise+"   ☾ "+set)
@@ -130,7 +160,7 @@ func forecastLines(r *weather.Report, st styles, n int) []string {
 		cells := []string{
 			d.Date.Weekday().String()[:3],
 			icon[0], icon[1], icon[2],
-			round(d.High) + "/" + round(d.Low) + "°",
+			round(d.High) + "/" + round(d.Low) + st.deg,
 			strconv.Itoa(d.PrecipChance) + "%",
 		}
 		for i, c := range cells {
@@ -147,9 +177,10 @@ func forecastLines(r *weather.Report, st styles, n int) []string {
 			b.WriteString(c)
 		}
 		s := strings.TrimRight(b.String(), " ")
-		if i == 0 {
+		switch i {
+		case 0:
 			s = st.bold.Render(s)
-		} else if i == 5 {
+		case 5:
 			s = st.dim.Render(s)
 		}
 		out[i] = s
@@ -168,13 +199,13 @@ func staleLine(r *weather.Report, st styles, now time.Time) string {
 	if !r.Stale {
 		return ""
 	}
-	return st.dim.Render("offline · updated " + ago(r.FetchedAt, now))
+	return st.dim.Render(st.join("offline", "updated "+ago(r.FetchedAt, now)))
 }
 
 // renderPanel draws the tall side panel: width and maxH include the border.
-func renderPanel(r *weather.Report, st styles, ascii bool, width, maxH int, now time.Time) string {
+func renderPanel(r *weather.Report, st styles, width, maxH int, now time.Time) string {
 	inner := width - 4 // border + padding
-	lines := currentLines(r, st, ascii, inner)
+	lines := currentLines(r, st, inner)
 	stale := staleLine(r, st, now)
 	extra := 0
 	if stale != "" {
@@ -194,9 +225,9 @@ func renderPanel(r *weather.Report, st styles, ascii bool, width, maxH int, now 
 
 // renderWidePanel draws the stacked layout's panel: current conditions on
 // the left, as many forecast days as fit on the right.
-func renderWidePanel(r *weather.Report, st styles, ascii bool, width, height int, now time.Time) string {
+func renderWidePanel(r *weather.Report, st styles, width, height int, now time.Time) string {
 	inner := width - 4
-	left := currentLines(r, st, ascii, min(inner, 28))
+	left := currentLines(r, st, min(inner, 28))
 	if stale := staleLine(r, st, now); stale != "" {
 		left = append(left, stale)
 	}
@@ -222,18 +253,17 @@ func renderWidePanel(r *weather.Report, st styles, ascii bool, width, height int
 }
 
 // minimalLine is the one-line summary for tiny terminals.
-func minimalLine(r *weather.Report) string {
+func minimalLine(r *weather.Report, st styles) string {
 	c := r.Current
 	_, _, label := weather.Classify(c.Code, c.IsDay)
 	parts := []string{
 		r.Location,
-		round(c.Temp) + weather.TempSuffix(r.Units),
+		st.temp(c.Temp, r.Units),
 		label,
 		round(c.WindSpeed) + " " + weather.WindSuffix(r.Units) + " " + weather.Compass(c.WindDirDeg),
 	}
-	s := strings.Join(parts, " · ")
 	if r.Stale {
-		s += " · offline"
+		parts = append(parts, "offline")
 	}
-	return s
+	return st.join(parts...)
 }

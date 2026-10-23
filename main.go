@@ -48,11 +48,25 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if cfg.DebugFetch {
 		return debugFetch(cfg, stdout, stderr)
 	}
-	palette := scene.NewPalette(cfg.NoColor)
+	loader := ui.NewLoader(cfg, "skycast/"+version)
+	if cfg.Once {
+		// Piped output gets no escape codes.
+		if !isTerminal(os.Stdout) {
+			cfg.NoColor = true
+		}
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+		defer stop()
+		if err := ui.RunOnce(ctx, cfg, loader, scene.NewPalette(cfg.NoColor), stdout); err != nil {
+			fmt.Fprintf(stderr, "skycast: %v\n", err)
+			return 1
+		}
+		return 0
+	}
+
 	m := ui.New(ui.Options{
 		Config:  cfg,
-		Palette: palette,
-		Loader:  ui.NewLoader(cfg, "skycast/"+version),
+		Palette: scene.NewPalette(cfg.NoColor),
+		Loader:  loader,
 	})
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
@@ -97,4 +111,11 @@ func debugFetch(cfg config.Config, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stdout, "  %s  %5.1f/%5.1f  %3d%%  rise %s set %s  %s\n", d.Date.Format("Mon 01-02"), d.High, d.Low, d.PrecipChance, d.Sunrise.Format("15:04"), d.Sunset.Format("15:04"), l)
 	}
 	return 0
+}
+
+// isTerminal reports whether f is a character device (a TTY), using only
+// the standard library.
+func isTerminal(f *os.File) bool {
+	fi, err := f.Stat()
+	return err == nil && fi.Mode()&os.ModeCharDevice != 0
 }

@@ -29,12 +29,8 @@ func (m Model) View() string {
 	}
 	switch m.state {
 	case stateLoading:
-		ellipsis := "…"
-		if m.cfg.ASCII {
-			ellipsis = "..."
-		}
-		msg := "fetching weather for " + placeLabel(m.cfg) + ellipsis + " " + m.spinnerFrame()
-		return m.place(m.width, m.height, truncate(msg, m.width))
+		msg := "fetching weather for " + placeLabel(m.cfg) + m.styles.ell + " " + m.spinnerFrame()
+		return m.place(m.width, m.height, m.styles.trunc(msg, m.width))
 	case stateError:
 		return m.place(m.width, m.height, m.errorView())
 	}
@@ -43,14 +39,14 @@ func (m Model) View() string {
 	var body string
 	switch l.Mode {
 	case Minimal:
-		body = truncate(minimalLine(m.report), m.width)
+		body = m.styles.trunc(minimalLine(m.report, m.styles), m.width)
 	case Ambient, SceneOnly:
 		body = m.renderScene()
 	case SideBySide:
-		panel := renderPanel(m.report, m.styles, m.cfg.ASCII, l.PanelW, l.PanelH, m.now())
+		panel := renderPanel(m.report, m.styles, l.PanelW, l.PanelH, m.now())
 		body = lipgloss.JoinHorizontal(lipgloss.Center, m.renderScene(), strings.Repeat(" ", panelGap), panel)
 	case Stacked:
-		panel := renderWidePanel(m.report, m.styles, m.cfg.ASCII, l.PanelW, l.PanelH, m.now())
+		panel := renderWidePanel(m.report, m.styles, l.PanelW, l.PanelH, m.now())
 		body = lipgloss.JoinVertical(lipgloss.Left, m.renderScene(), panel)
 	}
 	if !l.HasFooter() || m.height < 2 {
@@ -77,18 +73,29 @@ func (m Model) place(w, h int, content string) string {
 }
 
 func (m Model) footer() string {
+	st := m.styles
+	keys := footerKeys
+	if m.demo != nil {
+		keys = footerDemoKeys
+		if st.ascii {
+			keys = append([]string{"</> scene"}, keys[1:]...)
+		}
+	}
 	text := "? help"
 	if m.showHelp {
-		text = footerHelp
+		text = st.join(keys...)
+	}
+	if m.demo != nil {
+		text = st.join(m.demo.label(st), text)
 	}
 	if m.fetching && m.state == stateReady {
-		text += " · updating " + m.spinnerFrame()
+		text = st.join(text, "updating "+m.spinnerFrame())
 	}
-	return m.styles.dim.Render(truncate(text, m.width))
+	return st.dim.Render(st.trunc(text, m.width))
 }
 
 func (m Model) errorView() string {
-	hint := "r retry · q quit"
+	hint := m.styles.join("r retry", "q quit")
 	if errors.Is(m.err, location.ErrLocationNotFound) {
 		hint = `check the spelling, or add a country: skycast "paris, fr"` + "\n" + hint
 	}
@@ -97,14 +104,14 @@ func (m Model) errorView() string {
 	return lipgloss.JoinVertical(lipgloss.Center,
 		m.styles.err.Render(msg),
 		"",
-		m.styles.dim.Render(truncateLines(hint, m.width)),
+		m.styles.dim.Render(m.truncateLines(hint, m.width)),
 	)
 }
 
-func truncateLines(s string, w int) string {
+func (m Model) truncateLines(s string, w int) string {
 	lines := strings.Split(s, "\n")
 	for i, l := range lines {
-		lines[i] = truncate(l, w)
+		lines[i] = m.styles.trunc(l, w)
 	}
 	return strings.Join(lines, "\n")
 }

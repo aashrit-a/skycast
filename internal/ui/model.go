@@ -47,6 +47,8 @@ type Model struct {
 	frame     int
 	spinner   int
 
+	demo *demoState // non-nil in --demo mode
+
 	load   Loader
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -57,8 +59,8 @@ type Model struct {
 type Options struct {
 	Config  config.Config
 	Palette scene.Palette // build before the program starts
-	Loader  Loader
-	Rand    *rand.Rand // nil = seeded from the clock
+	Loader  Loader        // unused in demo mode
+	Rand    *rand.Rand    // nil = seeded from the clock
 	Now     func() time.Time
 }
 
@@ -79,7 +81,7 @@ func New(o Options) Model {
 		state:     stateLoading,
 		canvas:    scene.NewCanvas(0, 0),
 		palette:   o.Palette,
-		styles:    newStyles(o.Config.NoColor),
+		styles:    newStyles(o.Config.NoColor, o.Config.ASCII),
 		rng:       rng,
 		showPanel: true,
 		ambient:   o.Config.Ambient,
@@ -91,6 +93,10 @@ func New(o Options) Model {
 		cancel:    cancel,
 		now:       now,
 	}
+	if o.Config.Demo {
+		m.demo = newDemoState(now(), units)
+		m.applyReport(m.demo.report())
+	}
 	return m
 }
 
@@ -100,6 +106,9 @@ func (m Model) frameDuration() time.Duration {
 
 // Init starts the first fetch, the animation and the refresh timer.
 func (m Model) Init() tea.Cmd {
+	if m.demo != nil {
+		return tick(m.frameDuration())
+	}
 	return tea.Batch(m.fetch(false), tick(m.frameDuration()), refreshTimer())
 }
 
@@ -123,6 +132,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.spinner++
 		if m.scene != nil {
 			m.scene.Step()
+		}
+		if m.demo != nil && m.demo.shouldAdvance(m.now()) {
+			m.demo.move(1, m.now(), false)
+			m.applyReport(m.demo.report())
 		}
 		return m, tick(m.frameDuration())
 
@@ -164,20 +177,34 @@ func (m Model) handleKey(k string) (tea.Model, tea.Cmd) {
 	case matches(k, keysAmbient):
 		m.ambient = !m.ambient
 		m.relayout()
+	case m.demo != nil:
+		return m.handleDemoKey(k)
 	case matches(k, keysRefresh) && !m.fetching:
 		if m.state == stateError {
 			m.state = stateLoading
 		}
 		return m, m.fetch(true)
 	case matches(k, keysUnits) && m.state == stateReady && !m.fetching:
-		if m.units == weather.UnitsMetric {
-			m.units = weather.UnitsImperial
-		} else {
-			m.units = weather.UnitsMetric
-		}
-		m.autoUnits = false
+		m.units, m.autoUnits = toggleUnits(m.units), false
 		return m, m.fetch(false)
 	}
+	return m, nil
+}
+
+// handleDemoKey handles scene navigation and units in --demo mode; the
+// demo never touches the network, so refresh does nothing.
+func (m Model) handleDemoKey(k string) (tea.Model, tea.Cmd) {
+	switch {
+	case matches(k, keysNext):
+		m.demo.move(1, m.now(), true)
+	case matches(k, keysPrev):
+		m.demo.move(-1, m.now(), true)
+	case matches(k, keysUnits):
+		m.demo.units = toggleUnits(m.demo.units)
+	default:
+		return m, nil
+	}
+	m.applyReport(m.demo.report())
 	return m, nil
 }
 
@@ -234,4 +261,11 @@ func (m *Model) resizeScene() {
 	for i := 0; i < prewarmSteps; i++ {
 		m.scene.Step()
 	}
+}
+
+func toggleUnits(u weather.Units) weather.Units {
+	if u == weather.UnitsMetric {
+		return weather.UnitsImperial
+	}
+	return weather.UnitsMetric
 }
