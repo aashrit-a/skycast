@@ -4,7 +4,7 @@ Thanks for helping make the terminal a nicer place to check the weather.
 
 ## Development setup
 
-You need Go 1.22 or newer.
+You need Go 1.23 or newer (older Go builds binaries that current macOS refuses to run).
 
 ```sh
 make run ARGS="tokyo"   # run from source; skycast flags go in ARGS
