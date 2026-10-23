@@ -10,8 +10,12 @@ import (
 	"os/signal"
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
+
 	"github.com/YOUR_USERNAME/skycast/internal/config"
 	"github.com/YOUR_USERNAME/skycast/internal/location"
+	"github.com/YOUR_USERNAME/skycast/internal/scene"
+	"github.com/YOUR_USERNAME/skycast/internal/ui"
 	"github.com/YOUR_USERNAME/skycast/internal/weather"
 )
 
@@ -44,8 +48,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if cfg.DebugFetch {
 		return debugFetch(cfg, stdout, stderr)
 	}
-	// NOTE: the app itself is wired up in later phases.
-	fmt.Fprintln(stdout, "skycast: not implemented yet")
+	palette := scene.NewPalette(cfg.NoColor)
+	p := tea.NewProgram(ui.New(cfg, palette), tea.WithAltScreen())
+	if _, err := p.Run(); err != nil {
+		fmt.Fprintf(stderr, "skycast: %v\n", err)
+		return 1
+	}
 	return 0
 }
 
