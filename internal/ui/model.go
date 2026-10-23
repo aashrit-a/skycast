@@ -27,6 +27,12 @@ type Model struct {
 func New(cfg config.Config, palette scene.Palette) Model {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	p := scene.Params{Condition: weather.Rain, Intensity: weather.Moderate, Wind: 0.3, IsDay: true, ASCIIOnly: cfg.ASCII}
+	if cond, in, day, ok := scene.ByName(cfg.Scene); ok {
+		p.Condition, p.Intensity, p.IsDay = cond, in, day
+		if fi, ok := scene.ParseIntensity(cfg.Intensity); ok {
+			p.Intensity = fi
+		}
+	}
 	return Model{
 		cfg:     cfg,
 		scene:   scene.New(p, rng),

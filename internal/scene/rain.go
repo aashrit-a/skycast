@@ -20,8 +20,9 @@ type rain struct {
 	drops    []Particle
 	splashes []splash
 	frame    int
-	// heavy rain is reused by the storm scene with a darker, faster band.
+	// The storm scene reuses heavy rain with a deeper, faster band.
 	bandSpeed float64
+	bandRows  func(h int) int
 }
 
 func newRain(p Params, rng *rand.Rand) *rain {
@@ -59,6 +60,9 @@ func (r *rain) target() int {
 func (r *rain) Resize(w, h int) {
 	r.w, r.h = max(w, 1), max(h, 1)
 	rows := clampI(r.h/4, 2, 4)
+	if r.bandRows != nil {
+		rows = r.bandRows(r.h)
+	}
 	if r.h < 6 {
 		rows = 1
 	}

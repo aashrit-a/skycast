@@ -140,3 +140,20 @@ func containsNUL(s string) bool {
 	}
 	return false
 }
+
+func TestByNameCoversConfig(t *testing.T) {
+	names := []string{"clear", "night", "cloudy", "overcast", "fog", "drizzle", "rain", "freezing", "snow", "storm", "hail"}
+	for _, n := range names {
+		cond, _, _, ok := ByName(n)
+		if !ok {
+			t.Errorf("ByName(%q) not ok", n)
+			continue
+		}
+		if got := New(Params{Condition: cond}, rand.New(rand.NewSource(1))).Name(); got != n {
+			t.Errorf("scene for %q is named %q", n, got)
+		}
+	}
+	if _, _, _, ok := ByName("tornado"); ok {
+		t.Error("unknown name accepted")
+	}
+}
